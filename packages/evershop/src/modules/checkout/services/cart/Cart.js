@@ -7,10 +7,10 @@ const {
 const { select } = require('@evershop/postgres-query-builder');
 const { pool } = require('@evershop/evershop/src/lib/postgres/connection');
 const { v4: uuidv4 } = require('uuid');
-const { DataObject } = require('./DataObject');
 const {
-  getProductsBaseQuery
-} = require('../../../catalog/services/getProductsBaseQuery');
+  translate
+} = require('@evershop/evershop/src/lib/locale/translate/translate');
+const { DataObject } = require('./DataObject');
 // eslint-disable-next-line no-multi-assign
 module.exports = exports = {};
 
@@ -19,19 +19,17 @@ class Item extends DataObject {
 
   #product;
 
-  constructor(theCart, initialData = {}) {
+  constructor(cart, initialData = {}) {
     super(getValueSync('cartItemFields', []), initialData);
-    this.#cart = theCart;
+    this.#cart = cart;
   }
 
   async getProduct() {
     if (this.#product) {
       return this.#product;
     }
-    const productQuery = getProductsBaseQuery();
-    const product = await productQuery
-      .where('product_id', '=', this.getData('product_id'))
-      .load(pool);
+    const loaderFunction = getValueSync('cartItemProductLoaderFunction');
+    const product = await loaderFunction(this.getData('product_id'));
     this.#product = product;
     return product;
   }
@@ -62,6 +60,12 @@ class Cart extends DataObject {
     return this.getData('items') ?? [];
   }
 
+  /**
+   *
+   * @param {string} productID | product_id
+   * @param {number} qty
+   * @returns
+   */
   async addItem(productID, qty) {
     const item = await this.createItem(productID, parseInt(qty, 10));
     if (item.hasError()) {
@@ -87,7 +91,7 @@ class Cart extends DataObject {
       if (!duplicateItem) {
         items = items.concat(item);
       }
-      await this.setData('items', items);
+      await this.setData('items', items, true);
       return duplicateItem || item;
     }
   }
@@ -109,20 +113,13 @@ class Cart extends DataObject {
     }
   }
 
-  async createItem(productID, qty) {
-    // Make sure the qty is a number and greater than 0
-    if (typeof qty !== 'number' || qty <= 0) {
-      throw new Error('Invalid quantity');
-    }
-    const productQuery = getProductsBaseQuery();
-    const product = await productQuery
-      .where('product_id', '=', productID)
-      .load(pool);
-    if (!product) {
-      throw new Error('Product not found');
+  async createItem(productId, qty) {
+    // Make sure the qty is a number, not NaN and greater than 0
+    if (typeof qty !== 'number' || Number.isNaN(qty) || qty <= 0) {
+      throw new Error(translate('Invalid quantity'));
     }
     const item = new Item(this, {
-      product_id: productID,
+      product_id: productId,
       qty
     });
     await item.build();

@@ -11,6 +11,7 @@ import { useCheckout } from '@components/common/context/checkout';
 import { Field } from '@components/common/form/Field';
 import Button from '@components/common/form/Button';
 import { _ } from '@evershop/evershop/src/lib/locale/translate';
+import Spinner from '@components/common/Spinner';
 
 const QUERY = `
   query Query($cartId: String) {
@@ -78,14 +79,15 @@ export function StepContent({
   });
   const { data, fetching, error } = result;
 
-  if (fetching) return <p>Loading .....</p>;
-  if (error) {
+  if (fetching) {
     return (
-      <p>
-        Oh no...
-        {error.message}
-      </p>
+      <div className="flex justify-center items-center p-3">
+        <Spinner width={25} height={25} />
+      </div>
     );
+  }
+  if (error) {
+    return <div className="p-8 text-critical">{error.message}</div>;
   }
   return (
     <div>
@@ -98,7 +100,7 @@ export function StepContent({
         submitBtn={false}
         isJSON
       >
-        <h4 className="mb-1 mt-3">{_('Billing Address')}</h4>
+        <h4 className="mb-4 mt-12">{_('Billing Address')}</h4>
         <BillingAddress
           useShippingAddress={useShippingAddress}
           setUseShippingAddress={setUseShippingAddress}
@@ -121,16 +123,16 @@ export function StepContent({
           </div>
         )}
 
-        <h4 className="mb-1 mt-3">{_('Payment Method')}</h4>
+        <h4 className="mb-4 mt-12">{_('Payment Method')}</h4>
         {paymentMethods && paymentMethods.length > 0 && (
           <>
-            <div className="divide-y border rounded border-divider px-2 mb-2">
+            <div className="divide-y border rounded border-divider px-8 mb-8">
               {paymentMethods.map((method) => (
                 <div
                   key={method.code}
                   className="border-divider payment-method-list"
                 >
-                  <div className="py-2">
+                  <div className="py-8">
                     <Area id={`checkoutPaymentMethod${method.code}`} />
                   </div>
                 </div>
@@ -160,6 +162,7 @@ export function StepContent({
             {_('No payment method available')}
           </div>
         )}
+        <Area id="beforePlaceOrderButton" noOuter />
         <div className="form-submit-button">
           <Button
             onAction={() => {

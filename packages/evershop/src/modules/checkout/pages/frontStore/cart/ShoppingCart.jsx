@@ -12,8 +12,8 @@ function Title({ title }) {
   if (items.length <= 0) return null;
 
   return (
-    <div className="mb-3 text-center shopping-cart-heading">
-      <h1 className="shopping-cart-title mb-05">{title}</h1>
+    <div className="mb-12 text-center shopping-cart-heading">
+      <h1 className="shopping-cart-title mb-2">{title}</h1>
       <a href="/" className="underline">
         {_('Continue Shopping')}
       </a>
@@ -46,7 +46,7 @@ export default function ShoppingCart({ cart, setting, removeUrl }) {
             ]}
           />
           <div className="cart-page-middle">
-            <div className="grid gap-4 grid-cols-1 md:grid-cols-4">
+            <div className="grid gap-16 grid-cols-1 md:grid-cols-4">
               <Area
                 id="shoppingCartLeft"
                 className="col-span-1 md:col-span-3"
@@ -77,7 +77,7 @@ ShoppingCart.propTypes = {
     uuid: PropTypes.string.isRequired
   }).isRequired,
   setting: PropTypes.shape({
-    displayCheckoutPriceIncludeTax: PropTypes.bool
+    priceIncludingTax: PropTypes.bool
   }).isRequired,
   removeUrl: PropTypes.string.isRequired
 };
@@ -116,11 +116,19 @@ export const query = `
           value
           text
         }
-        subTotal {
+        lineTotal {
           value
           text
         }
-        total {
+        lineTotal {
+          value
+          text
+        }
+        lineTotalInclTax {
+          value
+          text
+        }
+        lineTotalInclTax {
           value
           text
         }
@@ -129,7 +137,7 @@ export const query = `
       }
     }
     setting {
-      displayCheckoutPriceIncludeTax
+      priceIncludingTax
     }
   }
 `;

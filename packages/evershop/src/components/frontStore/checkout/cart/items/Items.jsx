@@ -8,7 +8,7 @@ import { ItemOptions } from './ItemOptions';
 import { ItemVariantOptions } from './ItemVariantOptions';
 import './Items.scss';
 
-function Items({ items, setting: { displayCheckoutPriceIncludeTax } }) {
+function Items({ items, setting: { priceIncludingTax } }) {
   const AppContextDispatch = useAppDispatch();
 
   const removeItem = async (item) => {
@@ -54,7 +54,7 @@ function Items({ items, setting: { displayCheckoutPriceIncludeTax } }) {
             // eslint-disable-next-line react/no-array-index-key
             <tr key={index}>
               <td>
-                <div className="flex justify-start space-x-1 product-info">
+                <div className="flex justify-start space-x-4 product-info">
                   <div className="product-image flex justify-center items-center">
                     {item.thumbnail && (
                       <img
@@ -85,7 +85,7 @@ function Items({ items, setting: { displayCheckoutPriceIncludeTax } }) {
                     <ItemVariantOptions
                       options={JSON.parse(item.variantOptions || '[]')}
                     />
-                    <div className="mt-05">
+                    <div className="mt-2">
                       <a
                         onClick={async (e) => {
                           e.preventDefault();
@@ -104,12 +104,12 @@ function Items({ items, setting: { displayCheckoutPriceIncludeTax } }) {
                 {item.finalPrice.value < item.productPrice.value && (
                   <div>
                     <span className="regular-price">
-                      {displayCheckoutPriceIncludeTax
+                      {priceIncludingTax
                         ? item.productPriceInclTax.text
                         : item.productPrice.text}
                     </span>{' '}
                     <span className="sale-price">
-                      {displayCheckoutPriceIncludeTax
+                      {priceIncludingTax
                         ? item.finalPriceInclTax.text
                         : item.finalPrice.text}
                     </span>
@@ -118,13 +118,13 @@ function Items({ items, setting: { displayCheckoutPriceIncludeTax } }) {
                 {item.finalPrice.value >= item.productPrice.value && (
                   <div>
                     <span className="sale-price">
-                      {displayCheckoutPriceIncludeTax
+                      {priceIncludingTax
                         ? item.finalPriceInclTax.text
                         : item.finalPrice.text}
                     </span>
                   </div>
                 )}
-                <div className="md:hidden mt-05">
+                <div className="md:hidden mt-2">
                   <span>{_('Qty')}</span>
                   <span>{item.qty}</span>
                 </div>
@@ -134,9 +134,9 @@ function Items({ items, setting: { displayCheckoutPriceIncludeTax } }) {
               </td>
               <td className="hidden md:table-cell">
                 <span>
-                  {displayCheckoutPriceIncludeTax
-                    ? item.total.text
-                    : item.subTotal.text}
+                  {priceIncludingTax
+                    ? item.lineTotalInclTax.text
+                    : item.lineTotal.text}
                 </span>
               </td>
             </tr>
@@ -172,11 +172,11 @@ Items.propTypes = {
         text: PropTypes.string
       }),
       qty: PropTypes.number,
-      total: PropTypes.shape({
+      lineTotalInclTax: PropTypes.shape({
         value: PropTypes.number,
         text: PropTypes.string
       }),
-      subTotal: PropTypes.shape({
+      lineTotal: PropTypes.shape({
         value: PropTypes.number,
         text: PropTypes.string
       }),
@@ -184,7 +184,7 @@ Items.propTypes = {
     })
   ).isRequired,
   setting: PropTypes.shape({
-    displayCheckoutPriceIncludeTax: PropTypes.bool
+    priceIncludingTax: PropTypes.bool
   }).isRequired
 };
 
